@@ -11,8 +11,8 @@ import time
 from functools import wraps
 import os
 
-DEBUG_STM = bool(os.environ.get('DB_DEBUG_STM', 0))
-DEBUG_TIMING = bool(os.environ.get('DB_DEBUG_TIMING', 0))
+DEBUG_STM = bool(int(os.environ.get('DB_DEBUG_STM', 0)))
+DEBUG_TIMING = bool(int(os.environ.get('DB_DEBUG_TIMING', 0)))
 
 import logging
 logger = logging.getLogger(__name__)
