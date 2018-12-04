@@ -26,8 +26,9 @@ def get_db(max_cons=5):
     if _db is None:
         user = os.environ.get('PG_USER', 'user')
         password = os.environ.get('PG_PASS', '')
+        host = os.environ.get('PG_HOST', None)
         info("Starting DB connection for %s", user)
-        _db = DB_Connector("dbname=Imgur", user=user, password=password, maxsize=max_cons)
+        _db = DB_Connector("dbname=Imgur", user=user, password=password, maxsize=max_cons, host=host)
     return _db
     
 
