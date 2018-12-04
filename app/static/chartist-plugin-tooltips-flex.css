@@ -1,0 +1,52 @@
+.chartist-tooltip-flex {
+    white-space: pre;
+    position: absolute;
+    display: inline-block;
+    opacity: 0;
+    min-width: 5em;
+    padding: .5em;
+    background: rgb(244, 198, 61, 0.7);
+    color: #453D3F;
+    font-family: Oxygen,Helvetica,Arial,sans-serif;
+    font-weight: 700;
+    /*text-align: center;*/
+    pointer-events: none;
+    z-index: 1;
+    -webkit-transition: opacity .2s linear;
+    -moz-transition: opacity .2s linear;
+    -o-transition: opacity .2s linear;
+    transition: opacity .2s linear;
+    /* In case you need a fixed tooltip try this */
+    /* transform: translate(0, 0) !important; */
+}
+.chartist-tooltip-flex:before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    margin-left: -15px;
+    border: 15px solid transparent;
+    border-top-color: rgb(244, 198, 61, 0.7);
+}
+.chartist-tooltip-flex.tooltip-show { /* TODO */
+    opacity: 1;
+}
+    
+.chartist-tooltip-flex-marker{
+    stroke: rgba(255,255,255,.3);
+    stroke-width: 2;
+    stroke-dasharray: 4;
+    opacity: 0;
+}
+.chartist-tooltip-flex-marker.tooltip-show{
+    opacity: 1;
+}
+
+.ct-tooltip-point-hit{
+    stroke-width: 10px;
+    opacity: 1 !important
+}
+
+/*# sourceMappingURL=chartist-plugin-tooltips-flex.css.map */

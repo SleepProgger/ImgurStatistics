@@ -1,0 +1,238 @@
+{% set active_page = 'title_word_graph' %} 
+{% extends "base.html" %}
+
+{% block additional_head %}
+    <link rel="stylesheet" href="/static/chartist.min.css">
+    <link rel="stylesheet" href="/static/chartist-plugin-tooltips-flex.css">
+    
+    <style>
+        .ct-label{
+           color: white;
+        }
+        .ct-line{
+           stroke-width: 2px;
+        }
+        
+        .chart_container{
+           text-align: center;
+        }
+        @media only screen and (min-width: 1024px) {
+           .chart_container{
+               width:50%; margin-left: 25%
+           }
+        }
+        @media only screen and (min-width: 800px) {
+           .chart_container{
+               width:80%; margin-left: 10%
+           }
+        }
+        
+        .ct-chart svg{
+            overflow: visible;
+        }
+        .ct-grids line{
+            stroke: rgba(255,255,255,.2);
+        }
+        .ct-point{
+            opacity: 0;
+            stroke-width: 10px;
+        }
+        .ct-point.ct-tooltip-point-hit{
+            /*stroke: white;
+            stroke-width: 7px;*/
+        }
+        
+        .ct-tooltip-point-hit{
+            opacity: 1 !important;
+            stroke: green;
+        }
+        
+        .ct-legend {
+           position: relative;
+           z-index: 10;
+           list-style: none;
+           text-align: center;
+        }
+        .ct-legend li {
+            position: relative;
+            padding-left: 23px;
+            margin-right: 10px;
+            margin-bottom: 3px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .ct-legend li:before {
+            width: 16px;
+            height: 16px;
+            position: absolute;
+            left: 0;
+            top: 3px;
+            content: '';
+            border: 3px solid transparent;
+            border-radius: 2px;
+            background-color: pink;
+        }
+        .ct-legend li .inactive:before {
+            background-color: transparent;
+        }
+        .ct-legend li.inactive{
+            text-decoration: line-through;
+        }
+        
+        .ct-legend .ct-legend-inside {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        
+        .ct-chart.rotate-axis .ct-label.ct-horizontal.ct-end {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transform: rotate(-45deg);
+            transform-origin: 80%;
+            min-width: 100px;
+            max-width: 100px;
+        }
+        
+        .ct-zoom-rect{
+            fill: rgba(255,255,255, 0.2);
+            stroke-width: 2;
+            stroke: rgb(255,255,255);
+            pointer-events: none;
+        }
+        
+        .ct-chart .ct-series-a .ct-line,
+        .ct-chart .ct-series-a .ct-point {
+            stroke: green
+        }
+        .ct-chart .ct-series-b .ct-line,
+        .ct-chart .ct-series-b .ct-point {
+            stroke: red
+        }
+        .ct-chart .ct-series-c .ct-line,
+        .ct-chart .ct-series-c .ct-point {
+            stroke: blue
+        }
+        .ct-legend li:nth-child(1)::before {
+             background-color: green;
+        }
+        .ct-legend li:nth-child(2)::before {
+              background-color: red;
+        }
+        .ct-legend li:nth-child(3)::before {
+              background-color: blue;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+    <!-- TODO: bla, also use some nice box thingy arround this -->
+    <!--
+    <form action="/user" method="GET" class="form-inline">
+        <label class="mr-sm-2 mb-0" for="first_name">Username</label>
+        <input type="text" class="form-control mr-sm-2 mb-2 mb-sm-0" id="uname" name="username">
+        <button type="submit" id="search_btn" class="btn btn-primary mt-2 mt-sm-0">Search</button>
+    </form>
+    -->
+    <br> <!-- TODO -->
+
+    <div class="chart_container">
+        <div id="legend"></div>
+        <button id="btn_moveLEft">&lt;</button>
+        <button id="btn_resetZoom">Reset zoom</button>
+        <button id="btn_moveRight">&gt;</button>
+        <div class="ct-chart rotate-axis ct-perfect-fourth" id="graph_user_points"></div>
+    </div>
+    
+    <script>
+        ready(function(){         
+            var data = {{data|tojson}};
+            var series = [];
+            var ticks = [];
+            for(var i=0; i < data.length; ++i){
+              var d = data[i].data;
+              var frame = data[i].frame;
+              var points = [];
+              ticks = [];
+              for(var j=0; j < d.length; ++j){
+                points.push({y: d[j][0] || 0, x: d[j][1]}); // * frame * 1000});
+                ticks.push(i);
+              }
+              series.push({name: data[i].search, data: points});
+            }
+            
+            
+            var _reset = null;
+            function storeReset(reset){
+              _reset = reset;
+            }
+            document.getElementById('btn_resetZoom').onclick = function(){
+              if(_reset) _reset();
+            };
+            
+            //console.log(series);
+            var chart = window.chart = new Chartist.Line('#graph_user_points', {
+              series: series,
+            }, {
+              lineSmooth: false,
+              showPoint: false,
+              showArea: false,
+              axisY: {
+                offset: 20,
+              },
+              axisX: {
+                offset: 90,
+                //type: Chartist.AutoScaleAxis, //Chartist.FixedScaleAxis,
+                type: Chartist.FixedScaleAxis,
+                //ticks: ticks,
+                //type: Chartist.StepAxis,
+                divisor: 5,
+                labelInterpolationFnc: function(value, a, b, c) {
+                  return moment(value * 86400 * 1000).format('MMM D. Y');
+                }
+              },
+              plugins: [
+                Chartist.plugins.Tooltips_flex({
+                  highlightPoint: true,
+                  mergeFnc: 'interpolate',
+                  formatX: function(x){return moment(x * 86400 * 1000).format('MMM D. Y')},
+                  formatY: function(x){return x.toFixed(2)+ "%"}
+                }),
+                Chartist.plugins.legend({
+                  position: document.getElementById('legend')
+                }),
+                Chartist.plugins.zoom({
+                  onZoom : function(chart, reset) { storeReset(reset); },
+                  noClipY: true,
+                  autoZoomY: true, //{high: true, lowa: false},
+                  pointClipOffset: 5,
+                })
+              ]
+            }, [
+              ['screen and (min-width: 640px)', {
+                axisX: { divisor: 10 }
+              }],
+              ['screen and (min-width: 1200px)', {
+                axisX: { divisor: 15 }
+              }], 
+            ]).on('created', function(data){
+              console.log("created", data, this, chart);
+            });
+        })
+        
+        
+        
+        
+    </script>
+    
+    <script src="/static/moment.min.js"></script>
+    <script src="/static/chartist.js"></script>
+    <script src="/static/chartist-plugin-tooltips-flex.js"></script>
+    <script src="/static/chartist-plugin-zoom.js"></script>
+    <script src="/static/chartist-plugin-legend.js"></script> <!-- TODO: minify, or just do it yourself... -->
+{% endblock %}

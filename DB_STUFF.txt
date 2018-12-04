@@ -1,0 +1,5 @@
+/* Top poster since X */
+SELECT json->'account_url' AS name, count(json->'account_id') AS c, avg((json->>'score')::Numeric) AS a, sum((json->>'score')::Numeric) AS s FROM posts 
+    WHERE posted > (now() - '1 hours'::interval)::date
+GROUP BY json->'account_id', json->'account_url' ORDER BY s DESC
+

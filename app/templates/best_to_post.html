@@ -1,0 +1,168 @@
+{% set active_page = 'best_to_post' %} 
+{% extends "base.html" %}
+
+{% block additional_head %}
+    <link rel="stylesheet" href="/static/chartist.min.css">
+    <style>
+        .ct-label{
+           color: white;
+        }
+        
+        .chart_container{
+           text-align: center;
+        }
+        @media only screen and (min-width: 1024px) {
+           .chart_container{
+               width:50%; margin-left: 25%
+           }
+        }
+        @media only screen and (min-width: 800px) {
+           .chart_container{
+               width:80%; margin-left: 10%
+           }
+        }
+        
+        .ct-chart svg{
+            overflow: visible;
+        }
+        .ct-grids line{
+            stroke: rgba(255,255,255,.2)
+        }
+        .ct-legend {
+           position: relative;
+           z-index: 10;
+           list-style: none;
+           text-align: center;
+        }
+        .ct-legend li {
+            position: relative;
+            padding-left: 23px;
+            margin-right: 10px;
+            margin-bottom: 3px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .ct-legend li:before {
+            width: 16px;
+            height: 16px;
+            position: absolute;
+            left: 0;
+            top: 3px;
+            content: '';
+            border: 3px solid transparent;
+            border-radius: 2px;
+            background-color: pink;
+        }
+        .ct-legend li .inactive:before {
+            background: transparent;
+        }
+        .ct-legend .ct-legend-inside {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        
+        /* Super awkward way to color stuff imho.... TODO: write plugin ? */
+        .ct-chart .ct-series-a .ct-line,
+        .ct-chart .ct-series-a .ct-point {
+            stroke: white
+        }
+        .ct-chart .ct-series-b .ct-line,
+        .ct-chart .ct-series-b .ct-point {
+            stroke: green
+        }
+        .ct-chart .ct-series-c .ct-line,
+        .ct-chart .ct-series-c .ct-point {
+            stroke: red
+        }
+        .ct-legend li:nth-child(1)::before {
+             background-color: white;
+        }
+        .ct-legend li:nth-child(2)::before {
+              background-color: green;
+        }
+        .ct-legend li:nth-child(3)::before {
+              background-color: red;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div id="js_nag" class="alert alert-warning">
+      This functionality requires javascript. <br>
+      Sorry about that.
+    </div>
+    
+    <div class="chart_container">
+        <h3>Average points per hour (UTC)</h3>
+        <div id="legend_hour"></div>
+        <div class="ct-chart ct-perfect-fourth" id="graph_points_hour"></div>
+    </div>
+    <br><br>
+    <div class="chart_container">
+        <h3>Average points per day (UTC)</h3>
+        <div id="legend_day"></div>
+        <div class="ct-chart ct-perfect-fourth" id="graph_points_day"></div>
+    </div>
+
+    <script>
+        document.getElementById('js_nag').style.display = 'none';
+        ready(function(){
+            function flatten(arr, field){
+                var data = [];
+                for(var i=0; i < arr.length; ++i){
+                    //data.push(arr[i][field]);
+                  data.push({y: arr[i][field], x: arr[i]['h']});
+                }
+                return data;
+            }
+            
+            var hour_stats = {{hour_stats|tojson}};
+            var hour_labels = [];
+            for(var i=0; i < 24; ++i){hour_labels.push(i)}
+            new Chartist.Line('#graph_points_hour', {
+                labels: hour_labels,
+                series: [
+                    {name: "Points", data: flatten(hour_stats, 'a')},
+                    {name: "Upvotes", data: flatten(hour_stats, 'u')},
+                    {name: "Downvotes", data: flatten(hour_stats, 'd')},
+                ]               ,
+            }, {
+              axisX: {
+                type: Chartist.FixedScaleAxis,
+                ticks: hour_labels,
+              },
+                plugins: [ Chartist.plugins.legend({
+                  position: document.getElementById('legend_hour')
+                })]              
+            });
+            
+            var day_stats = {{day_stats|tojson}};
+            var day_labels = ['Mon', "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            new Chartist.Line('#graph_points_day', {
+                labels: day_labels,
+                series: [
+                    {name: "Points", data: flatten(day_stats, 'a')},
+                    {name: "Upvotes", data: flatten(day_stats, 'u')},
+                    {name: "Downvotes", data: flatten(day_stats, 'd')},
+                ],
+            }, {
+                axisX: {
+                  type: Chartist.FixedScaleAxis,
+                  ticks: [0,1,2,3,4,5,6],
+                  labelInterpolationFnc: function(value, a, b, c) {
+                    return day_labels[value];
+                  }
+                },
+                plugins: [ Chartist.plugins.legend({
+                  position: document.getElementById('legend_day')
+                })]              
+            });
+        })
+    </script>
+    
+    <script src="/static/chartist.min.js"></script>
+    <script src="/static/chartist-plugin-legend.js"></script> <!-- TODO: minify, or just do it yourself... -->
+{% endblock %}

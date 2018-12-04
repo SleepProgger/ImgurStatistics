@@ -1,0 +1,253 @@
+{% set active_page = 'user' %} 
+{% extends "base.html" %}
+
+{% block additional_head %}
+    <link rel="stylesheet" href="/static/chartist.min.css">
+    <link rel="stylesheet" href="/static/chartist-plugin-tooltips-flex.css">
+    
+    <style>
+        .ct-label{
+           color: white;
+        }
+        .ct-line {
+            stroke-width: 2px;
+        }
+        .chart_container{
+           text-align: center;
+        }
+        @media only screen and (min-width: 1024px) {
+           .chart_container{
+               width:50%; margin-left: 25%
+           }
+        }
+        @media only screen and (min-width: 800px) {
+           .chart_container{
+               width:80%; margin-left: 10%
+           }
+        }
+        
+        .ct-chart svg{
+            overflow: visible;
+        }
+        .ct-grids line{
+            stroke: rgba(255,255,255,.2)
+        }
+        .ct-point{
+            opacity: 0;
+        }
+        
+        .ct-legend {
+           position: relative;
+           z-index: 10;
+           list-style: none;
+           text-align: center;
+        }
+        .ct-legend li {
+            position: relative;
+            padding-left: 23px;
+            margin-right: 10px;
+            margin-bottom: 3px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .ct-legend li:before {
+            width: 16px;
+            height: 16px;
+            position: absolute;
+            left: 0;
+            top: 3px;
+            content: '';
+            border: 3px solid transparent;
+            border-radius: 2px;
+            background-color: pink;
+        }
+        .ct-legend li .inactive:before {
+            background: transparent;
+        }
+        .ct-legend .ct-legend-inside {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        
+        .ct-chart.rotate-axis .ct-label.ct-horizontal.ct-end {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transform: rotate(-45deg);
+            transform-origin: 80%;
+            min-width: 100px;
+            max-width: 100px;
+        }
+        
+        .ct-zoom-rect{
+            fill: rgba(255,255,255, 0.2);
+            stroke-width: 2;
+            stroke: rgb(255,255,255);
+            pointer-events: none;
+        }
+        
+        /* Super awkward way to color stuff imho.... TODO: write plugin ? */
+        .ct-chart .ct-series-a .ct-line,
+        .ct-chart .ct-series-a .ct-point {
+            stroke: green
+        }
+        .ct-chart .ct-series-b .ct-line,
+        .ct-chart .ct-series-b .ct-point {
+            stroke: green
+        }
+        .ct-chart .ct-series-c .ct-line,
+        .ct-chart .ct-series-c .ct-point {
+            stroke: red
+        }
+        .ct-legend li:nth-child(1)::before {
+             background-color: green;
+        }
+        .ct-legend li:nth-child(2)::before {
+              background-color: green;
+        }
+        .ct-legend li:nth-child(3)::before {
+              background-color: red;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <!-- TODO: bla, also use some nice box thingy arround this -->
+    
+    <form action="/user" method="GET" class="form-inline">
+        <label class="mr-sm-2 mb-0" for="first_name">Username</label>
+        <input type="text" class="form-control mr-sm-2 mb-2 mb-sm-0" id="uname" name="username">
+        <button type="submit" id="search_btn" class="btn btn-primary mt-2 mt-sm-0">Search</button>
+    </form>
+    <br> <!-- TODO -->
+
+    {% if has_user %}
+        {% if err %}
+            <div class="alert">{{err}}</div>
+        {% else %}        
+            <h3>Seen names for userid {{userid}}</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Last seen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for name, last_seen in user_names %}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td>{{last_seen}}</td>
+                        </tr>
+                    {% endfor %}      
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="alert alert-info">
+              This graph only shows the points earned by posts, not comments.
+              Additionally it only shows posts which where indexed by this bot.
+            </div>
+            <br> <!-- TODO -->
+            
+            
+            <div class="chart_container">
+                <h3>Points</h3>
+                <!--<div id="legend_hour"></div>-->
+                <button id="btn_moveLeft">&lt;</button>
+                <button id="btn_resetZoom">Reset zoom</button>
+                <button id="btn_moveRight">&gt;</button>
+                <div class="ct-chart rotate-axis ct-perfect-fourth" id="graph_user_points"></div>
+            </div>
+          
+          
+        {% endif %}
+    {% endif %}
+    
+    <script>
+        ready(function(){         
+            function flatten(arr, field){
+                var data = [];
+                for(var i=0; i < arr.length; ++i){
+                    data.push(arr[i][field]);
+                }
+                return data;
+            }
+            
+            document.getElementById('search_btn').onclick = function(){
+                var uname = document.getElementById('uname').value;
+                document.location = "/user/" + uname;
+                return false;
+            };
+            
+            var _reset = null;
+            function storeReset(reset){
+              _reset = reset;
+            }
+            document.getElementById('btn_resetZoom').onclick = function(){
+              if(_reset) _reset();
+            };
+            
+            {% if has_user and not err %}
+                var data = {{points|tojson}};
+                var d = data.data;
+                var points = [];
+                var l = 0;
+                for(var i=0; i < d.length; ++i){
+                  l += d[i][0];
+                  points.push({y: l, x: d[i][1]});
+                }
+                console.log(points[0]);
+                var chart = new Chartist.Line('#graph_user_points', {
+                    series: [
+                        {name: "Points", data: points},
+                    ],
+                }, {
+                  showPoint: true,
+                  axisY: {
+                    offset: 50,
+                  },
+                  axisX: {
+                    offset: 90,
+                    //type: Chartist.FixedScaleAxis,
+                    type: Chartist.AutoScaleAxis,
+                    divisor: 5,
+                    labelInterpolationFnc: function(value, a, b, c) {
+                      return moment(value * data.frame * 1000).format('MMM D. Y');
+                    }
+                  },
+                  plugins: [
+                    Chartist.plugins.Tooltips_flex({
+                      tooltipOffset: {y : -15},
+                      tooltipFormatY: function(x){return moment(x * data.frame * 1000).format('MMM D. Y')},
+                      //tooltipFormatX: function(x){return x.toFixed(2)}
+                    }),
+                    Chartist.plugins.zoom({
+                      onZoom : function(chart, reset) { storeReset(reset); },
+                      noClipY: true,
+                      autoZoomY: true,
+                    })
+                  ]
+                }, [
+                  ['screen and (min-width: 640px)', {
+                    axisX: { divisor: 10 }
+                  }],
+                  ['screen and (min-width: 1200px)', {
+                    axisX: { divisor: 15 }
+                  }], 
+                ]);
+            {% endif %}
+        })
+    </script>
+    
+    <script src="/static/moment.min.js"></script>
+    <script src="/static/chartist.js"></script>
+    <script src="/static/chartist-plugin-zoom.js"></script>
+    <script src="/static/chartist-plugin-tooltips-flex.js"></script>
+    <!--<script src="/static/chartist-plugin-tooltip.min.js"></script>-->
+{% endblock %}

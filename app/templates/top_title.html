@@ -1,0 +1,50 @@
+{% set active_page = 'top_title' %} 
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* TODO: move to global.css */   
+    .lbl_tab_button{    
+        cursor: pointer;
+        display: inline-block;
+        padding: 10px;
+        margin: 10px 0 0 0;
+    }
+    .lbl_tab_button.active{
+        border: 1px solid white;
+    }
+</style>
+
+<div class="right">
+  {{render_sitem('day', timeframe, '/top_title/day', 'Day', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('week', timeframe, '/top_title/week', 'Week', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('month', timeframe, '/top_title/month', 'Month', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('year', timeframe, '/top_title/year', 'Year', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('all', timeframe, '/top_title/all', 'All', 'lbl_tab_button badge badge-dark')}}
+</div>
+<br><br>
+    <div class="tab_pane">
+      <h3>{{titles[timeframe]}}</h3>
+      <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Word</th>
+                    <th>Count</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                    <td><a href="/title_word_graph?words={{row.a}}">{{row.a}}</a></td>
+                    <td>{{row.c}}</td>
+                    <td>{{"{:,}".format(row.p)}}</td>
+                </tr>
+            {% endfor %}      
+            </tbody>
+        </table>
+      </div>
+    </div>
+{% endblock %}

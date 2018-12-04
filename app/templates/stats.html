@@ -1,0 +1,29 @@
+{% set active_page = 'stats' %} 
+{% extends "base.html" %}
+
+{% block content %}
+
+    <!-- TODO: do this nicer -->
+
+    <div class="row justify-content-center">
+        <div class="col-5">Posts indexed</div>
+        <div class="col-5">{{posts_indexed}}</div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-5">Tags indexed:</div>
+        <div class="col-5">{{tags_indexed}}</div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-5">User names indexed:</div>
+        <div class="col-5">{{usernames_indexed[0]}} ({{usernames_indexed[1]}} unique user)</div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-5">Oldest post indexed:</div>
+        <div class="col-5">{{oldest_post}}</div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-5">Lastest update:</div>
+        <div class="col-5">{{last_update}}</div>
+    </div>
+    
+{% endblock %}

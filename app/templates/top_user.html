@@ -1,0 +1,52 @@
+{% set active_page = 'top_user' %} 
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* TODO: move to global.css */   
+    .lbl_tab_button{    
+        cursor: pointer;
+        display: inline-block;
+        padding: 10px;
+        margin: 10px 0 0 0;
+    }
+    .lbl_tab_button.active{
+        border: 1px solid white;
+    }
+</style>
+
+<div class="right">
+  {{render_sitem('day', timeframe, '/top_user/day', 'Day', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('week', timeframe, '/top_user/week', 'Week', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('month', timeframe, '/top_user/month', 'Month', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('year', timeframe, '/top_user/year', 'Year', 'lbl_tab_button badge badge-dark')}}
+  {{render_sitem('all', timeframe, '/top_user/all', 'All', 'lbl_tab_button badge badge-dark')}}
+</div>
+<br><br>
+    <div class="tab_pane">
+      <h3>{{titles[timeframe]}}</h3>
+      <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Points</th>
+                    <th>Posts</th>
+                    <th>Avg</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                    <td><a href="https://imgur.com/user/{{row.username}}">{{row.username}}</a></td>
+                    <td>{{row.p}}</td>
+                    <td>{{row.c}}</td>
+                    <td>{{"%i" % row.a}}</td>
+                </tr>
+            {% endfor %}      
+            </tbody>
+        </table>
+      </div>
+    </div>
+{% endblock %}
