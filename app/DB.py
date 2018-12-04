@@ -24,7 +24,10 @@ _db = None
 def get_db(max_cons=5):
     global _db
     if _db is None:
-        _db = DB_Connector("dbname=Imgur", user=os.environ.get('PG_USER', 'user'), password=os.environ.get('PG_PASS', ''), maxsize=max_cons)
+        user = os.environ.get('PG_USER', 'user')
+        password = os.environ.get('PG_PASS', '')
+        info("Starting DB connection for %s", user)
+        _db = DB_Connector("dbname=Imgur", user=user, password=password, maxsize=max_cons)
     return _db
     
 
@@ -86,7 +89,7 @@ class DB_Connector(AbstractDatabaseConnectionPool):
         self.execute("CREATE INDEX IF NOT EXISTS posts_posted_hour_index ON posts ((extract(HOUR FROM posted)))")
         self.execute("CREATE INDEX IF NOT EXISTS posts_posted_epoch_index ON posts ((extract(EPOCH FROM posted)))")
         self.execute("CREATE INDEX IF NOT EXISTS posts_posted_epoch_daily_index ON posts (((extract(EPOCH FROM posted) / 86400)::INT))")
-        self.execute("ANALYZE posts;")
+        #self.execute("ANALYZE posts;")
         
         self.execute("""
             CREATE TABLE IF NOT EXISTS images (
@@ -189,6 +192,9 @@ class DB_Connector(AbstractDatabaseConnectionPool):
                
                
     def _cacher(self, _iter, function, *args, commit_after=50, **kwargs):
+        """
+        Simple utils function to do bulk inserts in using one commit
+        """
         cache = []
         i = 0
         try:

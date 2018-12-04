@@ -9,9 +9,10 @@ from gevent.socket import wait_read, wait_write
 from psycopg2 import extensions, OperationalError, connect
 import time
 from functools import wraps
+import os
 
-DEBUG_STM = True
-DEBUG_TIMING = True
+DEBUG_STM = bool(os.environ.get('DB_DEBUG_STM', 0))
+DEBUG_TIMING = bool(os.environ.get('DB_DEBUG_TIMING', 0))
 
 import logging
 logger = logging.getLogger(__name__)
