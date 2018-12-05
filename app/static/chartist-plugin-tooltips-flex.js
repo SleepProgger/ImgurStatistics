@@ -157,7 +157,6 @@
               if(!left) return right;
               if(!right) return left;
               point = project(point);
-              console.log("Point", point);
               var ns = (right.x - left.x);
               var ls = Math.abs(left.x - point) / ns;
               var rs = Math.abs(right.x - point) / ns;
@@ -310,7 +309,7 @@
                 d.point = elem.elem('line', {x1: 0, y1: 0, x2: 0.01, y2: 0}, chart.options.classNames.point + ' ' + options.highlightPointClass);
               }
               series.push(d);
-              console.log("series:", d);
+              //console.log("series:", d);
             }
             created = true;
           });

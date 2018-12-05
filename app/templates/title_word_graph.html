@@ -129,6 +129,11 @@
 {% endblock %}
 
 
+<!-- 
+    TODO: switch to load data via xhr so we can better cahe it
+    TODO: Think about different resolutions (7 days when zoomed out / day when zoomed in)
+ -->
+
 {% block content %}
 
     <!-- TODO: bla, also use some nice box thingy arround this -->
@@ -141,11 +146,23 @@
     -->
     <br> <!-- TODO -->
 
+
     <div class="chart_container">
+        <h2>Word percentage in titles per day</h2>
+        <!-- TODO: do this properly with bootstrap (also switch to ajax request)-->
+        <form method="GET">
+          {% for i in range(4) %}
+              <input type="text" name="words{{i}}" placeholder="some word">
+          {% endfor %}
+          <input type="submit" value="Search">
+          <span class="form-text text-muted">You can search for multiple words by using & for AND and | for OR.</span>
+        </form>
+        <br><!-- TODO: use css here -->
+        
         <div id="legend"></div>
-        <button id="btn_moveLEft">&lt;</button>
+        <!--<button id="btn_moveLEft">&lt;</button>  -->
         <button id="btn_resetZoom">Reset zoom</button>
-        <button id="btn_moveRight">&gt;</button>
+        <!--<button id="btn_moveRight">&gt;</button> -->
         <div class="ct-chart rotate-axis ct-perfect-fourth" id="graph_user_points"></div>
     </div>
     

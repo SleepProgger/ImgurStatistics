@@ -159,9 +159,9 @@
             <div class="chart_container">
                 <h3>Points</h3>
                 <!--<div id="legend_hour"></div>-->
-                <button id="btn_moveLeft">&lt;</button>
+                <!--<button id="btn_moveLEft">&lt;</button>  -->
                 <button id="btn_resetZoom">Reset zoom</button>
-                <button id="btn_moveRight">&gt;</button>
+                <!--<button id="btn_moveRight">&gt;</button> -->
                 <div class="ct-chart rotate-axis ct-perfect-fourth" id="graph_user_points"></div>
             </div>
           
@@ -214,8 +214,8 @@
                   },
                   axisX: {
                     offset: 90,
-                    //type: Chartist.FixedScaleAxis,
-                    type: Chartist.AutoScaleAxis,
+                    type: Chartist.FixedScaleAxis,
+                    //type: Chartist.AutoScaleAxis,
                     divisor: 5,
                     labelInterpolationFnc: function(value, a, b, c) {
                       return moment(value * data.frame * 1000).format('MMM D. Y');
@@ -224,7 +224,7 @@
                   plugins: [
                     Chartist.plugins.Tooltips_flex({
                       tooltipOffset: {y : -15},
-                      tooltipFormatY: function(x){return moment(x * data.frame * 1000).format('MMM D. Y')},
+                      formatX: function(x){return moment(x * data.frame * 1000).format('MMM D. Y')},
                       //tooltipFormatX: function(x){return x.toFixed(2)}
                     }),
                     Chartist.plugins.zoom({

@@ -16,7 +16,7 @@
 
   /**
    * Chartist.js zoom plugin.
-   * 
+   *
    */
   (function (window, document, Chartist) {
     'use strict';
@@ -25,15 +25,15 @@
       // onZoom
       // resetOnRightMouseBtn
       pointClipOffset: 5,
-      noClipY: false,
-      autoZoomY: {high: false, low: false},
+      noClipY: false
     };
 
     Chartist.plugins = Chartist.plugins || {};
     Chartist.plugins.zoom = function (options) {
       options = Chartist.extend({}, defaultOptions, options);
-      var api = {};
-      var _init = function zoom(chart) {
+
+      return function zoom(chart) {
+
         if (!(chart instanceof Chartist.Line)) {
           return;
         }
@@ -42,9 +42,6 @@
         var downPosition;
         var onZoom = options.onZoom;
         var ongoingTouches = [];
-        if(options.autoZoomY === true){
-          options.autoZoomY = {high: true, low: true};
-        }
 
         chart.on('draw', function (data) {
           var type = data.type;
@@ -201,7 +198,6 @@
         }
 
         function zoomIn(rect) {
-          console.log(rect);
           if (rect.width > 5 && rect.height > 5) {
               var x1 = Math.max(0, rect.x - chartRect.x1);
               var x2 = Math.min(chartRect.width(), x1 + rect.width);
@@ -211,30 +207,6 @@
               chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
               chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
 
-              if(options.noClipY && (options.autoZoomY.high || options.autoZoomY.low)){
-                var x_low = chart.options.axisX.highLow.low;
-                var x_high = chart.options.axisX.highLow.high;
-                var max_y = null;
-                var min_y = null;
-                var series = chart.data.series;
-                for(var i=0; i < series.length; ++i){
-                  var points = series[i].data;
-                  var l = binarySearch_x(points, x_low) + 1;
-                  for(var j=l; j < points.length; ++j){
-                    if(points[j].x > x_high) break;
-                    if(points[j].y > max_y || min_y == null) max_y = points[j].y;
-                    if(points[j].y < min_y || min_y == null) min_y = points[j].y;
-                  }
-                  var prev_j = Math.max(l-1, 0);
-                  if(min_y === max_y){
-                    max_y = Math.max(points[l].y, points[prev_j].y);
-                    min_y = Math.min(points[l].y, points[prev_j].y);
-                    if(min_y == max_y) max_y = min_y + 0.1; // prevents chartist from creating NaNs when range == 0 
-                  }
-                }
-                if( options.autoZoomY.high ) chart.options.axisY.highLow.high = max_y; 
-                if( options.autoZoomY.low ) chart.options.axisY.highLow.low = min_y;
-              }
               chart.update(chart.data, chart.options);
               onZoom && onZoom(chart, reset);
             }
@@ -263,15 +235,15 @@
           var y = firstPoint.y;
           var width = secondPoint.x - x;
           var height = secondPoint.y - y;
-          if (width < 0) {
-            width = -width;
-            x = secondPoint.x;
-          }
           if(options.noClipY){
             y = chartRect.y2;
             height = chartRect.y1 - y;
           }
-          else if (height < 0) {
+          if (width < 0) {
+            width = -width;
+            x = secondPoint.x;
+          }
+          if (height < 0) {
             height = -height;
             y = secondPoint.y;
           }
@@ -298,41 +270,22 @@
         }
 
         function project(value, axis) {
-          var max = axis.bounds.max;
-          var min = axis.bounds.min;
+          var bounds = axis.bounds || axis.range;
+          var max = bounds.max;
+          var min = bounds.min;
           if (axis.scale && axis.scale.type === 'log') {
             var base = axis.scale.base;
             return Math.pow(base,
-                value * baseLog(max / min, base) / axis.axisLength) * min;
+              value * baseLog(max / min, base) / axis.axisLength) * min;
           }
-          return (value * axis.bounds.range / axis.axisLength) + min;
+          var range = bounds.range || (max - min);
+          return (value * range / axis.axisLength) + min;
         }
 
         function baseLog(val, base) {
           return Math.log(val) / Math.log(base);
         }
-
-        function binarySearch_x(ar, el) {
-          var m = 0;
-          var n = ar.length - 1;
-          while (m <= n) {
-            var k = (n + m) >> 1;
-            if (el > ar[k].x) {
-              m = k + 1;
-            } else if(el < ar[k].x) {
-              n = k - 1;
-            } else {
-              return k;
-            }
-          }
-          return m - 1;
-        }
-
-        console.log("This", this);
-        _init.zoomIn = zoomIn;
-        _init.resetZoom = reset;
       };
-      return _init;
     };
   } (window, document, Chartist));
 

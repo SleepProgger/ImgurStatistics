@@ -113,10 +113,10 @@ def render_user_info(username=None, userid=None):
 def render_title_word_graph(username=None, userid=None):
     db = get_db()
     # TODO: only allow up to x | and & and max length
-    searches = [request.args.get('words', '')]
+    searches = []
     for i in range(5):
         w = request.args.get("words%i" % i)
-        if w:
+        if w and len(w.strip()):
             searches.append(w) 
     
     info("Searches %s" % searches)
