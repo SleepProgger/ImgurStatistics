@@ -180,7 +180,7 @@
                 points.push({y: d[j][0] || 0, x: d[j][1]}); // * frame * 1000});
                 ticks.push(i);
               }
-              series.push({name: data[i].search, data: points});
+              series.push({name: data[i].search.replace(/\+/g, " "), data: points});
             }
             
             

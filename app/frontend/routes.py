@@ -117,12 +117,13 @@ def render_title_word_graph(username=None, userid=None):
     for i in range(5):
         w = request.args.get("words%i" % i)
         if w and len(w.strip()):
-            searches.append(w) 
+            searches.append(w.replace(" ", "+")) 
     
     info("Searches %s" % searches)
     
     #frame = 86400 * 7
     frame = 60 * 60 * 24
+    # TODO: catch sysntax error in search term 
     args = {
         'data': [{'frame': frame, 'search': x, 'data': db.get_title_word_graph(x)} for x in searches]
     }
