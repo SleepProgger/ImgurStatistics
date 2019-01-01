@@ -42,4 +42,4 @@ def cache(expires=None, round_to_minute=False):
  
             return response
         return cache_func
-return cache_decorator
+    return cache_decorator
