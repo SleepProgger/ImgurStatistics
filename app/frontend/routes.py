@@ -14,6 +14,7 @@ import json
 
 from app.app_ import app 
 from werkzeug.exceptions import NotFound
+from app.utils import cache
 
 import logging
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ _ftitle_words = {'day': 'Top title words today', 'week': 'Top title words this w
 
 @app.route("/top_user")
 @app.route("/top_user/<frame>")
+@cache(60*30)
 def render_user(frame='day'):
     if not frame in _flookup:
         return NotFound()
@@ -42,6 +44,7 @@ def render_user(frame='day'):
 
 @app.route("/top_title")
 @app.route("/top_title/<frame>")
+@cache(60*60)
 def render_tope_title(frame='day'):
     if not frame in _flookup:
         return NotFound()
@@ -58,6 +61,7 @@ def render_index():
     return render_template('index.html')
 
 @app.route("/stats")
+@cache(60*60)
 def render_stats():
     db = get_db()
     args = {
@@ -70,6 +74,7 @@ def render_stats():
     return render_template('stats.html', **args)
 
 @app.route("/best_to_post")
+@cache(60*60)
 def render_best_to_post():
     db = get_db()
     args = {
@@ -82,6 +87,7 @@ def render_best_to_post():
 @app.route("/user/id/<userid>")
 @app.route("/user/")
 @app.route("/user")
+@cache(60*60)
 def render_user_info(username=None, userid=None):
     db = get_db()
     warn("Request url: %s" % request.url)
@@ -110,6 +116,7 @@ def render_user_info(username=None, userid=None):
     return render_template('user.html', **args)
 
 @app.route("/title_word_graph")
+@cache(60*60*24)
 def render_title_word_graph(username=None, userid=None):
     db = get_db()
     # TODO: only allow up to x | and & and max length
