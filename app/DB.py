@@ -179,7 +179,7 @@ class DB_Connector(AbstractDatabaseConnectionPool):
                     GROUP BY uid
                     ORDER BY p DESC
                     LIMIT 500
-                ) xxx JOIN (SELECT username, userid, max(last_seen) FROM user_names GROUP BY userid, username) xxxx ON userid = xxx.uid         
+                ) xxx JOIN (SELECT DISTINCT ON (userid) username, userid FROM user_names ORDER BY userid, last_seen DESC) xxxx ON userid = xxx.uid         
                 ORDER BY p DESC
             """, {'since': since})
                
@@ -295,7 +295,7 @@ class DB_Connector(AbstractDatabaseConnectionPool):
                     GROUP BY uid
                     ORDER BY p DESC
                     LIMIT %(limit)s
-                ) xxx JOIN (SELECT username, userid, max(last_seen) FROM user_names GROUP BY userid, username) xxxx ON userid = xxx.uid         
+                ) xxx JOIN (SELECT DISTINCT ON (userid) username, userid FROM user_names ORDER BY userid, last_seen DESC) xxxx ON userid = xxx.uid         
                 ORDER BY p DESC
             """
             args = {'since': days, 'limit': top_x}
